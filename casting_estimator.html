@@ -5,7 +5,310 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>脫蠟鑄造成本估算</title>
 <style>
+* { box-sizing: border-box; m<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脫蠟鑄造成本估算</title>
+<style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --surface2: #f9f8f5;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #1a1917;
+  --text2: #6b6860;
+  --text3: #9e9b94;
+  --accent: #1a1917;
+  --ok: #1a6640;
+  --ok-bg: #e6f4ec;
+  --ng: #8b1a1a;
+  --ng-bg: #fdeaea;
+  --blue: #1a3a6b;
+  --blue-bg: #eaf0fb;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+body { font-family: Georgia,'Noto Serif TC',serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--surface); display: flex; flex-direction: column; }
+.header { background: var(--accent); color: #fff; padding: 1.25rem 1.25rem 1rem; position: sticky; top: 0; z-index: 10; }
+.header h1 { font-size: 17px; font-weight: normal; letter-spacing: 0.04em; margin-bottom: 2px; }
+.header p { font-size: 11px; opacity: 0.6; font-family: 'Helvetica Neue',sans-serif; letter-spacing: 0.06em; }
+.tabs { display: flex; border-bottom: 1px solid var(--border2); background: var(--surface); position: sticky; top: 72px; z-index: 9; }
+.tab { flex: 1; padding: 12px 8px; border: none; background: transparent; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.02em; }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 500; }
+.content { flex: 1; overflow-y: auto; }
+.panel { display: none; padding: 1.25rem; }
+.panel.active { display: block; }
+.section { margin-bottom: 1.5rem; }
+.section-label { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.field { margin-bottom: 10px; }
+.field label { display: block; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+.field input, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface2); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.15s; appearance: none; -webkit-appearance: none; }
+.field input:focus, .field select:focus { border-color: var(--accent); background: var(--surface); }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6860' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.auto-tag { display: inline-block; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; padding: 2px 8px; background: var(--blue-bg); color: var(--blue); border-radius: 99px; margin-left: 6px; vertical-align: middle; }
+.auto-value { display: block; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; font-weight: 500; color: var(--blue); padding: 10px 12px; background: var(--blue-bg); border-radius: var(--radius-sm); border: 1px solid rgba(26,58,107,0.12); }
+.diff-hint { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; color: var(--text3); margin: 6px 0 8px; }
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.diff-card { border: 1px solid var(--border2); border-radius: var(--radius-sm); overflow: hidden; }
+.diff-card-label { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--text2); background: var(--surface2); padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.diff-card select { border: none; border-radius: 0; background: var(--surface); font-size: 13px; padding: 8px 28px 8px 10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6860' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+.coeff-display { background: var(--accent); color: #fff; border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.coeff-display .label { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; opacity: 0.7; }
+.coeff-display .num { font-size: 20px; font-weight: 300; letter-spacing: 0.04em; }
+.btn-primary { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; letter-spacing: 0.06em; cursor: pointer; margin-top: 0.5rem; transition: opacity 0.15s; }
+.btn-primary:active { opacity: 0.8; }
+.btn-ghost { width: 100%; padding: 12px; background: transparent; color: var(--text2); border: 1px solid var(--border2); border-radius: var(--radius); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 13px; cursor: pointer; margin-top: 0.75rem; letter-spacing: 0.04em; }
+.step-list { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+.step-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); font-family: 'Helvetica Neue',Arial,sans-serif; }
+.step-item:last-child { border-bottom: none; }
+.step-item.key { background: var(--surface2); }
+.step-name { font-size: 12px; color: var(--text2); max-width: 60%; line-height: 1.4; }
+.step-val { font-size: 13px; font-weight: 500; color: var(--text); text-align: right; }
+.step-item.key .step-name { color: var(--text); font-weight: 500; }
+.step-item.key .step-val { color: var(--accent); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+.metric-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.metric-card .m-label { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
+.metric-card .m-val { font-size: 18px; font-weight: 400; color: var(--text); line-height: 1; }
+.metric-card .m-sub { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; color: var(--text3); margin-top: 4px; }
+.metric-card.highlight { background: var(--accent); border-color: transparent; }
+.metric-card.highlight .m-label { color: rgba(255,255,255,0.5); }
+.metric-card.highlight .m-val { color: #fff; }
+.metric-card.highlight .m-sub { color: rgba(255,255,255,0.4); }
+.verdict { border-radius: var(--radius); padding: 1rem 1.25rem; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; font-weight: 500; line-height: 1.5; margin-bottom: 1.25rem; }
+.verdict.ok { background: var(--ok-bg); color: var(--ok); }
+.verdict.ng { background: var(--ng-bg); color: var(--ng); }
+.verdict .v-detail { font-size: 12px; font-weight: 400; margin-top: 4px; opacity: 0.8; }
+.bep-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--blue-bg); border: 1px solid rgba(26,58,107,0.12); border-radius: var(--radius); margin-bottom: 1.25rem; font-family: 'Helvetica Neue',Arial,sans-serif; }
+.bep-row .b-label { font-size: 12px; color: var(--blue); }
+.bep-row .b-val { font-size: 16px; font-weight: 500; color: var(--blue); }
+.note { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; color: var(--text3); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>脫蠟鑄造成本估算</h1>
+    <p>INVESTMENT CASTING COST ESTIMATOR</p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('input')">輸入資料</button>
+    <button class="tab" onclick="switchTab('result')">計算結果</button>
+  </div>
+  <div class="content">
+    <div id="panel-input" class="panel active">
+
+      <div class="section">
+        <p class="section-label">材質與爐次</p>
+        <div class="field"><label>材質單價（元/kg）</label><input type="number" id="metalPrice" value="150" min="0" step="0.01" oninput="calc()"></div>
+        <div class="row2">
+          <div class="field"><label>串數（串）</label><input type="number" id="strings" value="20" min="1" step="1" oninput="calc()"></div>
+          <div class="field"><label>串重（kg）</label><input type="number" id="stringWeight" value="5" min="0" step="0.01" oninput="calc()"></div>
+        </div>
+        <div class="field"><label>方案（一串幾顆）</label><input type="number" id="plan" value="10" min="1" step="1" oninput="calc()"></div>
+        <div class="field">
+          <label>一爐公斤數 <span class="auto-tag">自動</span></label>
+          <span class="auto-value" id="furnaceKgDisplay">— kg</span>
+        </div>
+        <div class="field"><label>一爐上限（kg，通常110）</label><input type="number" id="maxKg" value="110" min="1" step="1" oninput="calc()"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-label">殼模</p>
+        <div class="row2">
+          <div class="field"><label>每串殼模重（kg）</label><input type="number" id="shellWeight" value="0.5" min="0" step="0.01" oninput="calc()"></div>
+          <div class="field"><label>殼模材料單價（元/kg）</label><input type="number" id="shellPrice" value="22" min="0" step="0.01" oninput="calc()"></div>
+        </div>
+        <p class="note">殼模成本自動 ×1.2（損耗係數）</p>
+      </div>
+
+      <div class="section">
+        <p class="section-label">回爐料</p>
+        <div class="row2">
+          <div class="field"><label>模頭一串重（kg）</label><input type="number" id="returnPS" value="2" min="0" step="0.01" oninput="calc()"></div>
+          <div class="field"><label>回爐料單價（元/kg）</label><input type="number" id="returnPrice" value="150" min="0" step="0.01" oninput="calc()"></div>
+        </div>
+        <div class="field">
+          <label>回爐料重量 <span class="auto-tag">自動</span></label>
+          <span class="auto-value" id="returnWeightDisplay">— kg</span>
+        </div>
+        <p class="note">回爐料價值自動 ×0.95（燒損折扣）</p>
+      </div>
+
+      <div class="section">
+        <p class="section-label">成品</p>
+        <div class="field">
+          <label>成品數量（件）<span class="auto-tag">自動 = 方案×串數</span></label>
+          <span class="auto-value" id="qtyDisplay">— 件</span>
+        </div>
+        <div class="field"><label>成品單重（kg/件）</label><input type="number" id="unitWeight" value="0.3" min="0" step="0.001" oninput="calc()"></div>
+        <div class="field"><label>現行單價（元/kg）</label><input type="number" id="currentPrice" value="50" min="0" step="0.01" oninput="calc()"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-label">製造費用</p>
+        <div class="field"><label>每件平均製造費用（元/件）</label><input type="number" id="mfgAvg" value="100" min="0" step="0.01" oninput="calcDiff()"></div>
+        <p class="diff-hint">難度係數（各面向選擇後自動計算平均）</p>
+        <div class="diff-grid">
+          <div class="diff-card">
+            <div class="diff-card-label">射蠟</div>
+            <select id="d1" onchange="calcDiff()">
+              <option value="0.6">0.6 簡單</option><option value="0.8">0.8 較簡單</option>
+              <option value="1.0" selected>1.0 一般</option><option value="1.5">1.5 困難</option><option value="2.0">2.0 很困難</option>
+            </select>
+          </div>
+          <div class="diff-card">
+            <div class="diff-card-label">殼模</div>
+            <select id="d2" onchange="calcDiff()">
+              <option value="0.6">0.6 簡單</option><option value="0.8">0.8 較簡單</option>
+              <option value="1.0" selected>1.0 一般</option><option value="1.5">1.5 困難</option><option value="2.0">2.0 很困難</option>
+            </select>
+          </div>
+          <div class="diff-card">
+            <div class="diff-card-label">後處理</div>
+            <select id="d3" onchange="calcDiff()">
+              <option value="0.6">0.6 簡單</option><option value="0.8">0.8 較簡單</option>
+              <option value="1.0" selected>1.0 一般</option><option value="1.5">1.5 困難</option><option value="2.0">2.0 很困難</option>
+            </select>
+          </div>
+          <div class="diff-card">
+            <div class="diff-card-label">品檢</div>
+            <select id="d4" onchange="calcDiff()">
+              <option value="0.6">0.6 簡單</option><option value="0.8">0.8 較簡單</option>
+              <option value="1.0" selected>1.0 一般</option><option value="1.5">1.5 困難</option><option value="2.0">2.0 很困難</option>
+            </select>
+          </div>
+        </div>
+        <div class="coeff-display">
+          <span class="label">難度係數（四面向平均）</span>
+          <span class="num" id="diffDisplay">1.00</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="switchTab('result')">查看結果 →</button>
+    </div>
+
+    <div id="panel-result" class="panel">
+      <div class="section">
+        <p class="section-label">計算明細</p>
+        <div class="step-list" id="stepList"></div>
+      </div>
+      <div class="section">
+        <p class="section-label">每件成本彙總</p>
+        <div class="metrics">
+          <div class="metric-card"><div class="m-label">原物料每件成本</div><div class="m-val" id="r-mat">—</div><div class="m-sub">元/件</div></div>
+          <div class="metric-card"><div class="m-label">製造費用分攤</div><div class="m-val" id="r-mfg">—</div><div class="m-sub">元/件</div></div>
+          <div class="metric-card highlight"><div class="m-label">每件總成本</div><div class="m-val" id="r-total">—</div><div class="m-sub">元/件</div></div>
+          <div class="metric-card"><div class="m-label">每件現行售價</div><div class="m-val" id="r-price">—</div><div class="m-sub">元/件</div></div>
+        </div>
+        <div class="bep-row">
+          <span class="b-label">損益兩平單價（含製造費）</span>
+          <span class="b-val" id="r-bep">—</span>
+        </div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+      <button class="btn-ghost" onclick="switchTab('input')">← 返回修改</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function fmt(n) { return n.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['input','result'][i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='result') calc();
+}
+
+function getDiff() {
+  return ((+document.getElementById('d1').value)+(+document.getElementById('d2').value)+
+          (+document.getElementById('d3').value)+(+document.getElementById('d4').value))/4;
+}
+
+function calcDiff() {
+  document.getElementById('diffDisplay').textContent = getDiff().toFixed(2);
+  calc();
+}
+
+function calc() {
+  const metalPrice   = +document.getElementById('metalPrice').value||0;
+  const strings      = +document.getElementById('strings').value||1;
+  const stringWeight = +document.getElementById('stringWeight').value||0;
+  const plan         = +document.getElementById('plan').value||1;
+  const maxKg        = +document.getElementById('maxKg').value||110;
+  const shellWeight  = +document.getElementById('shellWeight').value||0;
+  const shellPrice   = +document.getElementById('shellPrice').value||0;
+  const returnPS     = +document.getElementById('returnPS').value||0;
+  const returnPrice  = +document.getElementById('returnPrice').value||0;
+  const qty          = plan * strings;
+  const unitWeight   = +document.getElementById('unitWeight').value||0;
+  const currentPrice = +document.getElementById('currentPrice').value||0;
+  const mfgAvg       = +document.getElementById('mfgAvg').value||0;
+  const diff         = getDiff();
+
+  const furnaceKg    = Math.min(strings*stringWeight, maxKg);
+  const metalCost    = metalPrice*furnaceKg;
+  const shellCost    = strings*shellWeight*1.2*shellPrice;
+  const returnWeight = returnPS*strings;
+  const returnValue  = returnWeight*returnPrice*0.95;
+  const netCost      = metalCost+shellCost-returnValue;
+  const matPerUnit   = netCost/qty;
+  const mfgPerUnit   = mfgAvg*diff;
+  const totalPerUnit = matPerUnit+mfgPerUnit;
+  const pricePerUnit = currentPrice*unitWeight;
+  const bepTotal     = unitWeight>0 ? totalPerUnit/unitWeight : 0;
+  const diffPerUnit  = pricePerUnit-totalPerUnit;
+
+  document.getElementById('furnaceKgDisplay').textContent = furnaceKg.toFixed(1)+' kg';
+  document.getElementById('returnWeightDisplay').textContent = returnWeight.toFixed(2)+' kg';
+  document.getElementById('qtyDisplay').textContent = qty+' 件';
+
+  const steps = [
+    {name:`一爐公斤數 MIN(${strings}串×${stringWeight}kg, ${maxKg})`, val:furnaceKg.toFixed(1)+' kg', key:false},
+    {name:`金屬料成本 ${metalPrice}×${furnaceKg.toFixed(1)}kg`, val:fmt(metalCost)+' 元', key:false},
+    {name:`殼模成本 ${strings}串×${shellWeight}kg×1.2×${shellPrice}`, val:fmt(shellCost)+' 元', key:false},
+    {name:`回爐料重 ${returnPS}kg×${strings}串`, val:returnWeight.toFixed(2)+' kg', key:false},
+    {name:`回爐料價值 ×0.95`, val:fmt(returnValue)+' 元', key:false},
+    {name:'一爐淨成本', val:fmt(netCost)+' 元', key:true},
+    {name:`每件原物料成本 ÷${qty}件`, val:fmt(matPerUnit)+' 元/件', key:false},
+    {name:`製造費用分攤 ${fmt(mfgAvg)}×係數${diff.toFixed(2)}`, val:fmt(mfgPerUnit)+' 元/件', key:false},
+    {name:'每件總成本（原物料＋製造）', val:fmt(totalPerUnit)+' 元/件', key:true},
+    {name:`每件現行售價 ${currentPrice}元/kg×${unitWeight}kg`, val:fmt(pricePerUnit)+' 元/件', key:false},
+  ];
+
+  document.getElementById('stepList').innerHTML = steps.map(s=>
+    `<div class="step-item${s.key?' key':''}"><span class="step-name">${s.name}</span><span class="step-val">${s.val}</span></div>`
+  ).join('');
+
+  document.getElementById('r-mat').textContent   = fmt(matPerUnit);
+  document.getElementById('r-mfg').textContent   = fmt(mfgPerUnit);
+  document.getElementById('r-total').textContent = fmt(totalPerUnit);
+  document.getElementById('r-price').textContent = fmt(pricePerUnit);
+  document.getElementById('r-bep').textContent   = fmt(bepTotal)+' 元/kg';
+
+  const v = document.getElementById('verdict');
+  if(diffPerUnit>0) {
+    v.className='verdict ok';
+    v.innerHTML=`✓ 現行單價可覆蓋成本<div class="v-detail">每件多 ${fmt(diffPerUnit)} 元 ／ 這爐多 ${fmt(diffPerUnit*qty)} 元</div>`;
+  } else {
+    v.className='verdict ng';
+    v.innerHTML=`✗ 現行單價不足，需調整<div class="v-detail">每件少 ${fmt(Math.abs(diffPerUnit))} 元 ／ 建議單價至少 ${fmt(bepTotal)} 元/kg</div>`;
+  }
+}
+
+calcDiff();
+</script>
+</body>
+</html>
+argin: 0; padding: 0; }
 :root {
   --bg: #f4f3ef;
   --surface: #ffffff;
